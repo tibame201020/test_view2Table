@@ -1,0 +1,14 @@
+BEGIN TRY
+    BEGIN TRANSACTION;
+    MERGE INTO ACCOUNT AS Target
+    USING Test_ContactView AS Source
+    ON (Target.EMAIL = Source.EMAIL)
+    WHEN NOT MATCHED THEN
+        INSERT (FirstName,	EMAIL, CRED, OTH)
+        VALUES (Source.FirstName , Source.EMAIL , SYSUTCDATETIME(), 'any-word');
+    COMMIT;
+END TRY
+BEGIN CATCH
+    PRINT 'ERROR: ' + ERROR_MESSAGE();
+    ROLLBACK;
+END CATCH
