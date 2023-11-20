@@ -12,6 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 
 public class ExcelConverter {
@@ -21,19 +22,23 @@ public class ExcelConverter {
              Workbook workbook = new XSSFWorkbook(inputStream);
              BufferedWriter writer = new BufferedWriter(new FileWriter(textFilePath))) {
             Sheet sheet = workbook.getSheetAt(0);
+            int lastRowNum = sheet.getLastRowNum();
 
-            for (Row row : sheet) {
-                int firstCellNum = row.getFirstCellNum();
-                int lastCellNum = row.getLastCellNum();
+            Row firstRow = sheet.getRow(0);
+            int lastCellNum = firstRow.getLastCellNum();
 
-                for (int i = firstCellNum; i < lastCellNum; i++) {
-                    Cell cell = row.getCell(i);
+            for (int i = 0; i < lastRowNum; i++) {
+                Row row = sheet.getRow(i);
+                if (null == row) {
+                    continue;
+                }
+                for (int j = 0; j < lastCellNum; j++) {
+                    Cell cell = row.getCell(j);
                     writer.write(null == cell ? "" : cell.toString());
                     writer.write('\t');
                 }
                 writer.newLine();
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -46,15 +51,15 @@ public class ExcelConverter {
         excelToText(excelFilePath, textFilePath);
         try {
             List<String> contents = Files.readAllLines(Paths.get(textFilePath));
-            for (int i = 0; i < contents.size(); i++) {
-                System.out.println("line = " + i);
-                String content = contents.get(i);
-                String[] contentArr = content.split("\t");
-                for (String str :
-                        contentArr) {
-                    System.out.println(str);
-                }
-            }
+
+            contents.forEach(content -> {
+                Arrays.stream(content.split("\t")).forEach(s -> {
+                    System.out.print(s);
+                    System.out.print(" ");
+                });
+                System.out.println();
+            });
+
         } catch (IOException e) {
             e.printStackTrace();
         }
